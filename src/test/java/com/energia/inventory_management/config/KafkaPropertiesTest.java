@@ -45,13 +45,13 @@ class KafkaPropertiesTest {
 
         @Test
         @DisplayName("Should load bootstrap servers configuration")
-        void shouldLoadBootstrapServers() {
+        void should_LoadBootstrap_Servers() {
             assertEquals(BOOTSTRAP_SERVERS, kafkaProperties.getBootstrapServers());
         }
 
         @Test
         @DisplayName("Should load admin client configuration")
-        void shouldLoadAdminConfig() {
+        void should_Load_Admin_Config() {
             assertNotNull(kafkaProperties.getAdmin());
             assertEquals("inventory-admin", kafkaProperties.getAdmin().getClientId());
         }
@@ -80,7 +80,7 @@ class KafkaPropertiesTest {
 
         @Test
         @DisplayName("Should load consumer JSON properties")
-        void shouldLoadConsumerJsonProperties() {
+        void should_Load_Consumer_Json_Properties() {
             var properties = kafkaProperties.getConsumer().getProperties();
             assertNotNull(properties);
             assertEquals(TRUSTED_PACKAGES, properties.getSpringJsonTrustedPackages());
@@ -95,7 +95,7 @@ class KafkaPropertiesTest {
 
         @Test
         @DisplayName("Should load producer properties")
-        void shouldLoadProducerProperties() {
+        void should_Load_Producer_Properties() {
             assertNotNull(kafkaProperties.getProducer());
             assertEquals(SerializerConfig.STRING_SERIALIZER,
                     kafkaProperties.getProducer().getKeySerializer());
@@ -112,7 +112,7 @@ class KafkaPropertiesTest {
 
         @Test
         @DisplayName("Should load listener properties")
-        void shouldLoadListenerProperties() {
+        void should_Load_Listener_Properties() {
             assertNotNull(kafkaProperties.getListener());
             assertEquals("MANUAL_IMMEDIATE", kafkaProperties.getListener().getAckMode());
             assertFalse(kafkaProperties.getListener().getMissingTopicsFatal());
@@ -126,7 +126,7 @@ class KafkaPropertiesTest {
 
         @Test
         @DisplayName("Should load all topic names")
-        void shouldLoadTopicNames() {
+        void should_LoadTopic_Names() {
             assertNotNull(kafkaProperties.getTopic());
             assertEquals(TopicNames.SALES, kafkaProperties.getTopic().getSales());
             assertEquals(TopicNames.MODIFIED, kafkaProperties.getTopic().getModified());
