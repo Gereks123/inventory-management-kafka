@@ -1,0 +1,49 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/inventory
+    username: tester
+    password: tester123
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  data:
+    web:
+      pageable:
+        default-page-size: 10
+        max-page-size: 100
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: inventory-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring-json-trusted-packages: 'com.energia.inventory_management.service.data.event'
+        spring-json-use-type-headers: true
+        spring-json-type-mapping: "itemEvent:com.energia.inventory_management.service.data.event.ItemEvent,queryEvent:com.energia.inventory_management.service.data.event.QueryEvent"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+    listener:
+      ack-mode: MANUAL_IMMEDIATE
+      missing-topics-fatal: false
+      type: batch
+    admin:
+      client-id: "inventory-admin"
+    topic:
+      sales: item-sales
+      modified: items-modified
+      deleted: items-deleted
+      created: items-created
+      fetch: items-fetched
+      sales-history: items-sales-history
+
+# Logging
+logging:
+  level:
+    com.inventory: DEBUG
+    org.apache.kafka: INFO
