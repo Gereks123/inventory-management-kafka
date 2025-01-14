@@ -135,3 +135,150 @@ POST /items
     "quantity": 30
 }
 ```
+
+**Validation Rules:**
+- `name`: Required, maximum 255 characters
+- `price`: Required, must be positive
+- `quantity`: Required, must be non-negative
+
+#### Update Item
+Updates an existing item. Supports partial updates.
+
+```http
+PUT /items/{id}
+```
+
+**Request Body:**
+```json
+{
+    "name": "Wireless Keyboard",
+    "price": 79.99
+}
+```
+
+**Validation Rules:**
+- All fields are optional
+- When provided:
+    - `name`: Maximum 255 characters
+    - `price`: Must be positive
+    - `quantity`: Must be non-negative
+
+#### Sell Item
+Records a sale for an item and updates its quantity.
+
+```http
+PATCH /items/{id}/sell
+```
+
+**Request Body:**
+```json
+{
+    "quantity": 5
+}
+```
+
+**Validation Rules:**
+- `quantity`: Required, must be positive and not exceed current stock
+
+#### Delete Item
+Removes an item from the inventory.
+
+```http
+DELETE /items/{id}
+```
+
+### Sales
+
+#### Get Sales
+Retrieves the entireity of the sales history or use the itemId field to query specific items with pagination support.
+
+```http
+GET /items/sales
+```
+
+**Query Parameters:**
+
+| Parameter  | Type    | Default | Description                      |
+|------------|---------|---------|----------------------------------|
+| itemId     | Long    | null    | Filter sales by specific item    |
+| page       | Integer | 0       | Page number                      |
+| size       | Integer | 10      | Items per page                   |
+| sortBy     | String  | "id"    | Field to sort by                 |
+| direction  | String  | "asc"   | Sort direction ("asc" or "desc") |
+
+
+**Example Response:**
+```json
+{
+    "content": [
+        {
+            "itemId": 1,
+            "quantitySold": 5,
+            "priceAtSale": 999.99,
+            "saleDate": "2024-01-12T14:30:00"
+        }
+    ],
+    "pageNumber": 0,
+    "pageSize": 10,
+    "totalElements": 1,
+    "totalPages": 1,
+    "first": true,
+    "last": true
+}
+```
+
+## Error Handling
+
+The API uses conventional HTTP response codes:
+- `200 OK`: Successful request
+- `201 Created`: Resource successfully created
+- `204 No Content`: Successful deletion
+- `400 Bad Request`: Invalid input
+- `404 Not Found`: Resource not found
+- `500 Internal Server Error`: Server error
+
+**Example Error Response:**
+```json
+{
+    "timestamp": "2024-01-12T15:30:45",
+    "message": "Validation Error",
+    "details": "Price must be greater than 0"
+}
+```
+
+### Common Error Cases
+
+#### Validation Error
+```json
+{
+    "timestamp": "2024-01-12T15:30:45",
+    "message": "Validation Error",
+    "details": "Name must not exceed 255 characters"
+}
+```
+
+#### Resource Not Found
+```json
+{
+    "timestamp": "2024-01-12T15:30:45",
+    "message": "Resource Not Found",
+    "details": "Item not found with id: 1"
+}
+```
+
+#### Insufficient Stock
+```json
+{
+    "timestamp": "2024-01-12T15:30:45",
+    "message": "Insufficient Stock",
+    "details": "Available: 5, Requested: 10"
+}
+```
+
+## Event Logging
+All operations are logged using Kafka events for audit purposes. The following events are tracked:
+- Item Created
+- Item Updated
+- Item Deleted
+- Item Sold
+- Sales History Queried
