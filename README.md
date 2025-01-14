@@ -42,6 +42,8 @@ Technologies used are:
 ## API Overview
 This API provides endpoints to manage inventory items and track sales history. It supports CRUD operations for items and includes pagination for large datasets.
 
+**NB!!!** You can use the api_endpoints.postman_collection.json to get a template with defined endpoints to query the application!  
+
 ## Base URL
 ```
 http://localhost:8080/items
