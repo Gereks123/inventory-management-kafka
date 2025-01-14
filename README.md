@@ -29,11 +29,13 @@
 - To stop the services the following commands: `docker-compose down` and for the application `./gradlew --stop` OR within the terminal use **CTRL+C**
 
 ## Application overview
-This application imitates a very small-scale application for inventory management. This application could be scaled to something bigger with further development.
+- This application imitates a very small-scale application for inventory management. 
+- This application could be scaled to something bigger with further development.
+- REST endpoints
 
 Technologies used are:
-- Spring Boot (3.4.1)
-- PostgresSql for data storagee/persistence
+- Spring Boot (3.4.1) - Spring MVC architectural pattern
+- PostgresSql for data storage/persistence
 - Kafka acting as a log retention tool. (Pub/Sub) logic implementation. 
   - Each action has its separate topic. The idea was to "imitate" a real microservice where Kafka could potentially talk to 10-20 applications.
 - Zookeeper for Kafka
