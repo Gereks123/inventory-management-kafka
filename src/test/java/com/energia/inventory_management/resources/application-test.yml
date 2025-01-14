@@ -1,0 +1,35 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: inventory-group-test
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring-json-trusted-packages: com.energia.inventory_management.service.data.event
+        spring-json-use-type-headers: true
+        spring-json-type-mapping: "itemEvent:com.energia.inventory_management.service.data.event.ItemEvent,queryEvent:com.energia.inventory_management.service.data.event.QueryEvent"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+    listener:
+      ack-mode: MANUAL_IMMEDIATE
+      missing-topics-fatal: false
+      type: batch
+    admin:
+      client-id: inventory-admin-test
+    topic:
+      sales: test-item-sales
+      modified: test-items-modified
+      deleted: test-items-deleted
+      created: test-items-created
+      fetch: test-items-fetched
+
+logging:
+  level:
+    com.energia.inventory_management: DEBUG
+    org.apache.kafka: WARN
+    org.springframework.kafka: WARN
