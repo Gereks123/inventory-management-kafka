@@ -114,7 +114,7 @@ public class ItemService {
         item.setQuantity(item.getQuantity() - soldItem.getQuantity());
 
         // Generate a Sale History report
-        generateSalesHistory(id, soldItem, item);
+        generateSalesHistoryEntry(id, soldItem, item);
         publishItemEvent(item,
                 "Item Sold",
                 EventType.ITEM_SOLD,
@@ -125,7 +125,7 @@ public class ItemService {
         return itemRepository.save(item);
     }
 
-    private void generateSalesHistory(Long id, SaleDto soldItem, Item item) {
+    private void generateSalesHistoryEntry(Long id, SaleDto soldItem, Item item) {
         SalesHistory salesHistory = new SalesHistory();
         salesHistory.setItemId(id);
         salesHistory.setQuantitySold(soldItem.getQuantity());
@@ -157,20 +157,19 @@ public class ItemService {
         Sort.Direction sortDirection = Sort.Direction.fromString(direction.toUpperCase());
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
+        // Determine if endpoint was queried by ID or not
         Page<SalesHistory> salePage = itemId != null ?
                 salesHistoryRepository.findByItemId(itemId, pageRequest) :
                 salesHistoryRepository.findAll(pageRequest);
 
-        // Create key-value pairs for the request parameters to display used params.
-        Map<String, Object> queryParams = new HashMap<>();
-        queryParams.put("itemId", itemId);
-        queryParams.put("page", page);
-        queryParams.put("size", size);
-        queryParams.put("sortBy", sortBy);
-        queryParams.put("direction", direction);
-
-        // Publish a general query event message to a topic
-        publishQueryEvent(EventType.SALES_HISTORY_QUERIED, queryParams, kafkaTopics.getTopic().getSalesHistory());
+        Map<String, Object> paginationParams = createPaginationParams(page, size, sortBy, direction);
+        if (itemId != null) {
+            paginationParams.put("itemId", itemId);
+        }
+        publishQueryEventWithParams(EventType.SALES_HISTORY_QUERIED,
+                paginationParams,
+                kafkaTopics.getTopic().getSalesHistory()
+        );
 
         List<SaleHistoryResponseDto> content = salePage.getContent().stream()
                 .map(sale -> SaleHistoryResponseDto.builder()
@@ -199,7 +198,7 @@ public class ItemService {
         Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("itemId", item.getId());
 
-        publishQueryEvent(EventType.ITEM_FETCHED, queryParams, kafkaTopics.getTopic().getFetch());
+        publishQueryEventWithParams(EventType.ITEM_FETCHED, queryParams, kafkaTopics.getTopic().getFetch());
 
         return item;
     }
@@ -210,14 +209,9 @@ public class ItemService {
 
         Page<Item> itemPage = itemRepository.findAll(pageRequest);
 
-        // Map key-value pairs from the request
-        Map<String, Object> queryParams = new HashMap<>();
-        queryParams.put("page", page);
-        queryParams.put("size", size);
-        queryParams.put("sortBy", sortBy);
-        queryParams.put("direction", direction);
+        Map<String, Object> paginationParams = createPaginationParams(page, size, sortBy, direction);
 
-        publishQueryEvent(EventType.ITEM_FETCHED, queryParams, kafkaTopics.getTopic().getFetch());
+        publishQueryEventWithParams(EventType.ITEM_FETCHED, paginationParams, kafkaTopics.getTopic().getFetch());
 
         return PageResponseDto.<Item>builder()
                 .content(itemPage.getContent())
@@ -230,7 +224,16 @@ public class ItemService {
                 .build();
     }
 
-    private void publishQueryEvent(EventType eventType, Map<String, Object> queryParams, String kafkaTopic) {
+    private Map<String, Object> createPaginationParams(int page, int size, String sortBy, String direction) {
+        Map<String, Object> queryParams = new HashMap<>();
+        queryParams.put("page", page);
+        queryParams.put("size", size);
+        queryParams.put("sortBy", sortBy);
+        queryParams.put("direction", direction);
+        return queryParams;
+    }
+
+    private void publishQueryEventWithParams(EventType eventType, Map<String, Object> queryParams, String kafkaTopic) {
         QueryEvent queryEvent = eventPublisher.createQueryEvent(
                 eventType,
                 queryParams
